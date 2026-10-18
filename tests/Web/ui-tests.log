@@ -1,0 +1,57 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node ui-checks.cjs
+
+PASS: startup requests native state instead of loading demo data
+PASS: locked screen hides all vault controls
+PASS: existing vault offers unlock, never account overwrite
+PASS: master password sent only to native bridge and removed from input
+PASS: native unlock response opens local vault UI
+PASS: entry title and notes are escaped before rendering
+PASS: detail receives and displays masked secret fields
+PASS: explicit reveal obtains one native secret field
+PASS: revealed field masks again after 15 seconds
+PASS: copy asks native host rather than browser clipboard
+PASS: Hello operation shows persistent progress within settings dialog
+PASS: Hello failure remains visible with stage and native code after operation ends
+PASS: failed Hello enrollment re-enables action without claiming protection is enabled
+PASS: account quick-fill lists account, phone and email, excluding passwords
+PASS: password quick-fill lists only password presets
+PASS: quick-fill labels are escaped
+PASS: choosing an account preset requests only that native value
+PASS: selected phone fills the account field
+PASS: common password fills masked input and never plaintext preview
+PASS: closing entry editor clears quick-filled secret DOM
+PASS: preset manager lists labels with password values hidden
+PASS: explicit preset edit loads one masked value with whitespace retained
+PASS: preset password has explicit reveal control
+PASS: preset password hides again after 15 seconds
+PASS: preset save uses native revision and exact content
+PASS: failed preset save retains editor content and reports failure
+PASS: successful preset save clears preset editor secret
+PASS: third-party-only form hides local account/password inputs
+PASS: third-party form distinguishes provider and underlying passport account
+PASS: live preview shows multiple configured passport login methods
+PASS: save includes independent provider bindings and stable passport reference
+PASS: third-party-only entry can submit without a platform password
+PASS: login detail exposes linked entry navigation without copying its password
+PASS: linked passport button navigates to the referenced vault entry
+PASS: trashed passport is diagnosed without offering a misleading active link
+PASS: deleted passport link remains visible as unavailable
+PASS: custom provider names and identity hints are escaped
+PASS: editing requests full entry only on explicit action
+PASS: account and password use separately labelled inputs
+PASS: existing unknown multiline fields survive edit mapping
+PASS: save uses native revision and preserves secret contents
+PASS: saving preserves extra secret fields and newlines
+PASS: successful save clears editor DOM
+PASS: unsaved edits exist only in active UI draft
+PASS: system lock closes editor and returns to login
+PASS: system lock clears drafts, lists, details and secret DOM
+PASS: late native detail or quick-fill response cannot repopulate locked UI
+PASS: lock clears preset editor and preset catalog DOM
+PASS: system lock preserves correct existing-vault login mode
+PASS: runtime has no web storage, network client, browser clipboard or demo data
+PASS: local page CSP blocks network connections
+RESULT: 51 UI checks passed.

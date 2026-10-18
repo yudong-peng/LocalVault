@@ -1,0 +1,6 @@
+{
+  "name": "localvault-ui-checks",
+  "private": true,
+  "scripts": { "test": "node ui-checks.cjs" },
+  "devDependencies": { "linkedom": "0.18.13" }
+}

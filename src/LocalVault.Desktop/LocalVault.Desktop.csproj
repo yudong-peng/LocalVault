@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF><EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>LocalVault</AssemblyName><RootNamespace>LocalVault.Desktop</RootNamespace>
+    <Version>0.5.2</Version>
+    <Company>Yudong Peng</Company><Authors>Yudong Peng</Authors>
+    <Product>LocalVault 本地保险库</Product>
+    <Description>离线个人敏感信息管理工具</Description>
+    <Copyright>Copyright © 2026 Yudong Peng</Copyright>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../LocalVault.Core/LocalVault.Core.csproj" /></ItemGroup>
+  <ItemGroup><PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" /></ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="10.0.13" />
+    <FrameworkReference Update="Microsoft.WindowsDesktop.App.WPF" RuntimeFrameworkVersion="10.0.13" />
+  </ItemGroup>
+  <ItemGroup><Content Include="Web/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><Resource Include="Assets/app.ico" /></ItemGroup>
+</Project>

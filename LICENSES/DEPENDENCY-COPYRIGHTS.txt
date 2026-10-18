@@ -1,0 +1,46 @@
+Konscious.Security.Cryptography.Argon2 1.3.1
+Keef Aragon
+(c) 2024 Keef Aragon
+License: MIT
+https://github.com/kmaragon/Konscious.Security.Cryptography
+
+Konscious.Security.Cryptography.Blake2 1.1.1
+Keef Aragon
+(c) 2024 Keef Aragon
+License: MIT
+https://github.com/kmaragon/Konscious.Security.Cryptography
+
+Microsoft.Data.Sqlite 10.0.13
+Microsoft
+© Microsoft Corporation. All rights reserved.
+License: MIT
+https://docs.microsoft.com/dotnet/standard/data/sqlite/
+
+Microsoft.Data.Sqlite.Core 10.0.13
+Microsoft
+© Microsoft Corporation. All rights reserved.
+License: MIT
+https://docs.microsoft.com/dotnet/standard/data/sqlite/
+
+SQLitePCLRaw.bundle_e_sqlite3 2.1.13
+Eric Sink
+Copyright 2014-2024 SourceGear, LLC
+License: Apache-2.0
+
+
+SQLitePCLRaw.core 2.1.13
+Eric Sink
+Copyright 2014-2024 SourceGear, LLC
+License: Apache-2.0
+
+
+SQLitePCLRaw.lib.e_sqlite3 2.1.13
+Eric Sink
+Copyright 2014-2024 SourceGear, LLC
+License: Apache-2.0
+
+
+SQLitePCLRaw.provider.e_sqlite3 2.1.13
+Eric Sink
+Copyright 2014-2024 SourceGear, LLC
+License: Apache-2.0

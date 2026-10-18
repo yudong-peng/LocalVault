@@ -1,0 +1,121 @@
+// DOM/bridge regression checks; no browser, native provider, real vault or network is used.
+const {parseHTML}=require(process.env.LOCALVAULT_TEST_DOM || 'linkedom');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const web=path.resolve(__dirname,'../../src/LocalVault.Desktop/Web');
+const {window}=parseHTML(fs.readFileSync(path.join(web,'index.html'),'utf8'));
+const document=window.document;
+const sent=[];let receive;let count=0;
+for(const dialog of document.querySelectorAll('dialog')){
+ dialog.showModal=function(){this.open=true;this.setAttribute('open','');};
+ dialog.close=function(){this.open=false;this.removeAttribute('open');this.dispatchEvent(new window.Event('close'));};
+}
+for(const form of document.querySelectorAll('form'))form.reset=function(){for(const input of this.querySelectorAll('input,textarea'))input.value='';};
+// linkedom provides a DOM, but not an interactive browser's select.value setters.
+for(const select of document.querySelectorAll('select'))Object.defineProperty(select,'value',{configurable:true,get(){return this._value??this.querySelector('option')?.getAttribute('value')??'';},set(v){this._value=String(v);}});
+const timers=new Map();let tid=0;
+const context=vm.createContext({window,document,console,crypto:require('node:crypto').webcrypto,structuredClone,matchMedia:()=>({matches:false}),setTimeout:(f,delay)=>{timers.set(++tid,{f,delay});return tid;},clearTimeout:id=>timers.delete(id)});
+window.chrome={webview:{postMessage:msg=>sent.push(msg),addEventListener:(name,handler)=>{receive=handler;}}};
+vm.runInContext(fs.readFileSync(path.join(web,'app.js'),'utf8'),context);
+const $=s=>document.querySelector(s),tick=()=>new Promise(resolve=>setImmediate(resolve));
+function check(condition,message){assert.ok(condition,message);console.log('PASS: '+message);count++;}
+function response(req,data,epoch=data?.epoch??1){receive({data:{id:req.id,ok:true,data,epoch}});}
+function latest(action){const req=sent.findLast(m=>m.action===action);assert.ok(req,'request '+action);return req;}
+const unlocked={unlocked:true,hasVault:true,epoch:1,helloAvailable:true,helloEnabled:false,idleMinutes:5,trashRetentionDays:30,contentRevision:4,quickFillPresets:[{id:'phone-preset',label:'个人手机号',kind:'phone'},{id:'email-preset',label:'工作邮箱',kind:'email'},{id:'account-preset',label:'<img src=x onerror=alert(1)>',kind:'account'},{id:'password-preset',label:'常用密码 A',kind:'password'}],lastManualBackupUtc:null,hasUnexportedChanges:true,entries:[{id:'passport-qq',name:'我的 QQ 通行证',category:'账号与密码',tags:[],summary:'QQ 1234',favorite:false,updated:'2026-10-16T00:00:00Z',deletedAt:null},{id:'93c63ebc-bbcd-4c18-a5ea-9a04312505ba',name:'<img src=x onerror=alert(1)>',category:'账号与密码',tags:['工作'],summary:'test@example.com',favorite:false,updated:'2026-10-17T00:00:00Z',deletedAt:null}]};
+unlocked.entries.reverse();
+const info={id:unlocked.entries[0].id,name:unlocked.entries[0].name,category:'账号与密码',tags:['工作'],notes:'<script>not executable</script>',favorite:false,fields:[{index:0,name:'账号',secret:false,value:'test@example.com',hasValue:true},{index:1,name:'密码',secret:true,value:'',hasValue:true},{index:2,name:'额外私钥',secret:true,value:'',hasValue:true}]};
+(async()=>{
+ check(sent.length===1&&sent[0].action==='status','startup requests native state instead of loading demo data');
+ response(sent[0],{...unlocked,unlocked:false,entries:null,epoch:0});await tick();
+ check(!$('#lock-screen').hidden&&$('.app-shell').hidden,'locked screen hides all vault controls');
+ check($('#confirm-row').hidden&&$('#login-submit').textContent.includes('解锁'),'existing vault offers unlock, never account overwrite');
+ $('#master-password').value='test-only-password';$('#login-form').dispatchEvent(new window.Event('submit',{cancelable:true}));
+ check(latest('unlock').payload.password==='test-only-password'&&$('#master-password').value==='','master password sent only to native bridge and removed from input');
+ response(latest('unlock'),unlocked);await tick();
+ response(latest('entryGet'),info);await tick();
+ check(!$('.app-shell').hidden&&$('#lock-screen').hidden,'native unlock response opens local vault UI');
+ check(!$('#entry-detail').querySelector('img')&&!$('#entry-detail').querySelector('script'),'entry title and notes are escaped before rendering');
+ check(!$('#entry-detail').textContent.includes('NATIVE-SECRET')&&$('#entry-detail').textContent.includes('••••'),'detail receives and displays masked secret fields');
+ $('#entry-detail [data-reveal="1"]').click();response(latest('fieldReveal'),{value:'NATIVE-SECRET'});await tick();
+ check($('#entry-detail').textContent.includes('NATIVE-SECRET'),'explicit reveal obtains one native secret field');
+ for(const {f,delay} of [...timers.values()])if(delay===15000)f();
+ check(!$('#entry-detail').textContent.includes('NATIVE-SECRET'),'revealed field masks again after 15 seconds');
+ $('#entry-detail [data-copy="1"]').click();check(latest('fieldCopy').payload.index===1,'copy asks native host rather than browser clipboard');response(latest('fieldCopy'),{copied:true});await tick();
+
+ $('#settings-open').click();$('#hello-enable').click();
+ check(!$('#hello-feedback').hidden&&$('#hello-feedback').textContent.includes('正在处理'),'Hello operation shows persistent progress within settings dialog');
+ receive({data:{id:latest('helloEnable').id,ok:false,error:'Windows Hello 操作未完成。\n失败步骤：设置密钥用途\n诊断码：0x80090029',epoch:1}});await tick();
+ check($('#hello-feedback').textContent.includes('设置密钥用途')&&$('#hello-feedback').textContent.includes('0x80090029')&&$('#hello-feedback').classList.contains('error'),'Hello failure remains visible with stage and native code after operation ends');
+ check(!$('#hello-enable').disabled&&!vm.runInContext('state.helloEnabled',context),'failed Hello enrollment re-enables action without claiming protection is enabled');
+ $('#settings-dialog').close();
+ $('#new-entry').click();
+ check($('#entry-form [data-quick-fill="username"] option[value="phone-preset"]')&&$('#entry-form [data-quick-fill="username"] option[value="email-preset"]')&&!$('#entry-form [data-quick-fill="username"] option[value="password-preset"]'),'account quick-fill lists account, phone and email, excluding passwords');
+ check($('#entry-form [data-quick-fill="password"] option[value="password-preset"]')&&!$('#entry-form [data-quick-fill="password"] option[value="phone-preset"]'),'password quick-fill lists only password presets');
+ check(!$('#entry-form').querySelector('img')&&$('#entry-form').textContent.includes('<img src=x onerror=alert(1)>'),'quick-fill labels are escaped');
+ function chooseQuick(key,id){const select=$('#entry-form [data-quick-fill="'+key+'"]');Object.defineProperty(select,'value',{configurable:true,writable:true,value:id});select.dispatchEvent(new window.Event('change',{bubbles:true}));}
+ chooseQuick('username','phone-preset');check(latest('presetValue').payload.id==='phone-preset','choosing an account preset requests only that native value');response(latest('presetValue'),{value:'13800000000'});await tick();
+ check($('#field-username').value==='13800000000','selected phone fills the account field');
+ chooseQuick('password','password-preset');response(latest('presetValue'),{value:'QUICK-FILL-PASSWORD'});await tick();
+ check($('#field-password').type==='password'&&$('#field-password').value==='QUICK-FILL-PASSWORD'&&!$('#preview-values').textContent.includes('QUICK-FILL-PASSWORD'),'common password fills masked input and never plaintext preview');
+ $('#entry-editor').close();
+ check(!$('#entry-form').innerHTML.includes('QUICK-FILL-PASSWORD'),'closing entry editor clears quick-filled secret DOM');
+ $('#settings-open').click();$('#presets-open').click();
+ check(!$('#presets-list').querySelector('img')&&$('#presets-list').textContent.includes('内容已隐藏'),'preset manager lists labels with password values hidden');
+ $('#presets-list [data-preset-edit="password-preset"]').click();response(latest('presetGet'),{id:'password-preset',label:'常用密码 A',kind:'password',value:'  PRESET-EDIT-SECRET  '});await tick();
+ check($('#preset-editor').open&&$('#preset-value').type==='password'&&$('#preset-value').value==='  PRESET-EDIT-SECRET  ','explicit preset edit loads one masked value with whitespace retained');
+ $('#preset-toggle').click();check($('#preset-value').type==='text','preset password has explicit reveal control');
+ for(const {f,delay} of [...timers.values()])if(delay===15000)f();
+ check($('#preset-value').type==='password','preset password hides again after 15 seconds');
+ $('#preset-form').dispatchEvent(new window.Event('submit',{cancelable:true}));const presetSave=latest('presetSave');
+ check(presetSave.payload.expectedRevision===4&&presetSave.payload.preset.value==='  PRESET-EDIT-SECRET  ','preset save uses native revision and exact content');
+ receive({data:{id:presetSave.id,ok:false,error:'模拟保存失败',epoch:1}});await tick();
+ check($('#preset-editor').open&&$('#preset-error').textContent==='模拟保存失败'&&$('#preset-value').value==='  PRESET-EDIT-SECRET  ','failed preset save retains editor content and reports failure');
+ $('#preset-form').dispatchEvent(new window.Event('submit',{cancelable:true}));unlocked.contentRevision=5;response(latest('presetSave'),unlocked);await tick();response(latest('entryGet'),info);await tick();
+ check(!$('#preset-editor').open&&$('#preset-value').value==='','successful preset save clears preset editor secret');
+ $('#presets-dialog').close();$('#settings-dialog').close();
+
+ $('#new-entry').click();$('#login-methods-editor [data-login-add]').click();$('#login-methods-editor [data-login-toggle="password"]').click();
+ check(!$('#field-password')&&!$('#field-username'),'third-party-only form hides local account/password inputs');
+ check($('#login-methods-editor').textContent.includes('通行证平台')&&$('#login-methods-editor').textContent.includes('关联已有通行证条目'),'third-party form distinguishes provider and underlying passport account');
+ let linked=$('#login-methods-editor [data-login-linked]');Object.defineProperty(linked,'value',{configurable:true,writable:true,value:'passport-qq'});linked.dispatchEvent(new window.Event('change',{bubbles:true}));
+ const identity=$('#login-methods-editor [data-login-identity]');identity.value='个人 QQ · 尾号 1234';identity.dispatchEvent(new window.Event('input',{bubbles:true}));
+ $('#login-methods-editor [data-login-add]').click();let provider=[...document.querySelectorAll('[data-login-provider]')].at(-1);Object.defineProperty(provider,'value',{configurable:true,writable:true,value:'微信'});provider.dispatchEvent(new window.Event('change',{bubbles:true}));
+ check($('#preview-values').textContent.includes('QQ 登录')&&$('#preview-values').textContent.includes('微信 登录'),'live preview shows multiple configured passport login methods');
+ $('#entry-name').value='第三方登录测试平台';$('#entry-name').dispatchEvent(new window.Event('input'));$('#entry-form').dispatchEvent(new window.Event('submit',{cancelable:true}));const platformSave=latest('entrySave');
+ check(platformSave.payload.entry.loginMethods.length===2&&platformSave.payload.entry.loginMethods[0].linkedEntryId==='passport-qq'&&platformSave.payload.entry.loginMethods[1].provider==='微信','save includes independent provider bindings and stable passport reference');
+ check(platformSave.payload.entry.fields.every(f=>!f.value),'third-party-only entry can submit without a platform password');
+ receive({data:{id:platformSave.id,ok:false,error:'模拟取消保存，仅检查提交数据',epoch:1}});await tick();$('#entry-editor').close();
+ window.loginTestInfo={category:'账号与密码',loginMethods:platformSave.payload.entry.loginMethods};
+ $('#entry-detail').innerHTML=vm.runInContext('loginDetail(window.loginTestInfo)',context);
+ check($('#entry-detail').textContent.includes('查看通行证：我的 QQ 通行证')&&!$('#entry-detail').textContent.includes('NATIVE-SECRET'),'login detail exposes linked entry navigation without copying its password');
+ $('#entry-detail [data-linked-entry]').click();check(latest('entryGet').payload.id==='passport-qq','linked passport button navigates to the referenced vault entry');response(latest('entryGet'),{id:'passport-qq',name:'我的 QQ 通行证',category:'账号与密码',tags:[],notes:'',favorite:false,fields:[],loginMethods:[]});await tick();
+ vm.runInContext("entries.find(e=>e.id==='passport-qq').deleted=true",context);
+ const staleHtml=vm.runInContext('loginDetail(window.loginTestInfo)',context);
+ check(staleHtml.includes('已在回收站')&&!staleHtml.includes('data-linked-entry'),'trashed passport is diagnosed without offering a misleading active link');
+ vm.runInContext("entries.find(e=>e.id==='passport-qq').deleted=false",context);
+ window.loginTestInfo.loginMethods[0].linkedEntryId='missing-id';check(vm.runInContext('loginDetail(window.loginTestInfo)',context).includes('原关联条目已不存在'),'deleted passport link remains visible as unavailable');
+ window.loginTestInfo.loginMethods=[{kind:'thirdParty',provider:'其他',customProvider:'<script>unsafe</script>',identity:'<img src=x>'}];const escapedDetail=document.createElement('div');escapedDetail.innerHTML=vm.runInContext('loginDetail(window.loginTestInfo)',context);check(!escapedDetail.querySelector('script')&&!escapedDetail.querySelector('img'),'custom provider names and identity hints are escaped');
+ $('#entry-list [data-entry="'+info.id+'"]').click();response(latest('entryGet'),info);await tick();
+ $('#entry-detail [data-action="edit"]').click();const edit=latest('entryGet');
+ check(edit.payload.forEdit===true,'editing requests full entry only on explicit action');
+ response(edit,{...info,fields:info.fields.map(f=>({...f,value:f.secret?(f.index===1?'NATIVE-SECRET':'PRIVATE\nMULTILINE'):f.value}))});await tick();
+ check($('#entry-editor').open&&$('#field-username')&&$('#field-password'),'account and password use separately labelled inputs');
+ check(vm.runInContext('draft.custom[0].value',context)==='PRIVATE\nMULTILINE','existing unknown multiline fields survive edit mapping');
+ $('#entry-form').dispatchEvent(new window.Event('submit',{cancelable:true}));const save=latest('entrySave');
+ check(save.payload.expectedRevision===5&&save.payload.entry.fields.find(f=>f.name==='密码').value==='NATIVE-SECRET','save uses native revision and preserves secret contents');
+ check(save.payload.entry.fields.find(f=>f.name==='额外私钥').secret&&save.payload.entry.fields.find(f=>f.name==='额外私钥').value==='PRIVATE\nMULTILINE','saving preserves extra secret fields and newlines');
+ response(save,{...unlocked,contentRevision:6});await tick();response(latest('entryGet'),info);await tick();
+ check(!$('#entry-editor').open&&!$('#entry-form').innerHTML.includes('NATIVE-SECRET'),'successful save clears editor DOM');
+ $('#new-entry').click();$('#entry-name').value='not saved';$('#entry-name').dispatchEvent(new window.Event('input'));$('#field-password').value='UNSAVED-SECRET';$('#field-password').dispatchEvent(new window.Event('input',{bubbles:true}));
+ check(vm.runInContext('draft.values.account.password',context)==='UNSAVED-SECRET','unsaved edits exist only in active UI draft');
+ chooseQuick('password','password-preset');const latePreset=latest('presetValue');
+ const before=vm.runInContext("call('fieldReveal',{id:selectedId,index:1}).then(value=>{window.staleSecret=value.value;}).catch(()=>{});",context);
+ const stale=latest('fieldReveal');receive({data:{type:'locked',epoch:2,data:{...unlocked,unlocked:false,entries:null,epoch:2}}});response(stale,{value:'LATE-SECRET'},2);response(latePreset,{value:'LATE-PRESET-SECRET'},2);await tick();
+ check(!$('#entry-editor').open&&$('.app-shell').hidden&&!$('#lock-screen').hidden,'system lock closes editor and returns to login');
+ check(vm.runInContext('draft===null&&entries.length===0&&detailInfo===null',context)&&!document.body.innerHTML.includes('UNSAVED-SECRET'),'system lock clears drafts, lists, details and secret DOM');
+ check(!window.staleSecret&&!document.body.innerHTML.includes('LATE-PRESET-SECRET'),'late native detail or quick-fill response cannot repopulate locked UI');
+ check($('#hello-feedback').hidden&&$('#hello-feedback').textContent===''&&$('#preset-value').value===''&&$('#presets-list').childElementCount===0,'lock clears preset editor and preset catalog DOM');
+ check($('#login-submit').textContent.includes('解锁'),'system lock preserves correct existing-vault login mode');
+ check(!/localStorage|sessionStorage|indexedDB|navigator\.clipboard|fetch\(|XMLHttpRequest|sampleEntries/.test(fs.readFileSync(path.join(web,'app.js'),'utf8')),'runtime has no web storage, network client, browser clipboard or demo data');
+ check(document.querySelector('[http-equiv="Content-Security-Policy"]').content.includes("connect-src 'none'"),'local page CSP blocks network connections');
+ console.log(`RESULT: ${count} UI checks passed.`);
+})().catch(error=>{console.error(error);process.exitCode=1;});

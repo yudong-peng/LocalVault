@@ -1,0 +1,2 @@
+PASS: original v0.1 reader / upgraded format / Legacy reader rejected upgraded format.
+PASS: original v0.1 reader / pre-upgrade snapshot / Legacy reader accepted file.

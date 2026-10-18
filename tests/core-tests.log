@@ -1,0 +1,219 @@
+
+Welcome to .NET 10.0!
+---------------------
+SDK Version: 10.0.100
+
+Telemetry
+---------
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
+
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry
+
+----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https
+
+----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+PASS: short master password rejected
+PASS: failed creation leaves no vault
+PASS: new vault initially empty
+PASS: second account/vault creation cannot overwrite existing vault
+PASS: multiline secret preserved
+PASS: save owns a separate snapshot
+PASS: duplicate IDs rejected without changing stored data
+PASS: reauthentication checks actual encryption key
+PASS: titles, accounts, passwords, notes, tags and private keys absent from SQLite plaintext
+PASS: incorrect master password rejected
+PASS: encrypted data survives close and reopen
+PASS: full encrypted backup exported
+PASS: existing backup cannot be silently overwritten
+PASS: export cannot overwrite active vault
+PASS: wrong backup password rejected
+PASS: failed restore preserves current file byte for byte
+PASS: old master password rejected in changed session
+PASS: old master password cannot unlock changed vault
+PASS: password change retains data
+PASS: old backup retains original password
+PASS: stale session cannot overwrite newer revision
+PASS: backup restores in a clean directory without device keys
+PASS: modified authentication tag rejected
+PASS: tampered backup cannot replace vault
+PASS: rejected tampered restore keeps current data
+PASS: unbounded KDF memory request rejected
+PASS: entire stored header authenticated as payload AAD
+PASS: successful restore preserves previous vault
+PASS: successful restore recovers expected content
+PASS: locked/disposed session cannot access data
+PASS: temporary files cleaned after success and failure
+PASS: legacy wrong password cannot trigger migration
+PASS: original v0.1 fixture opens as legacy without migration
+PASS: legacy entries receive safe defaults for favorites, trash and retention
+PASS: legacy multiline data preserved
+PASS: read-only legacy unlock leaves original file unchanged
+PASS: first mutation upgrades reader capability and data format atomically
+PASS: favorite change persists during migration
+PASS: upgrade backup retains original readable data and password
+PASS: same-vault automatic snapshot time available
+PASS: favorites view includes starred active entry
+PASS: tag filter matches complete tags rather than substrings
+PASS: Chinese and English tag separators, whitespace and duplicate case normalized
+PASS: search excludes secret values and includes public account field
+PASS: list summary never uses sensitive account field
+PASS: trash excluded from active and favorites views
+PASS: trash content, favorite flags and deletion timestamps remain encrypted
+PASS: trash survives close and reopen
+PASS: restoring a trashed entry retains favorite and fields
+PASS: permanent deletion refuses active entries
+PASS: successful export records coverage without fabricating a content change
+PASS: manual backup receipt persists across restart
+PASS: changes after export are marked unexported
+PASS: failed export cannot overwrite an existing file
+PASS: failed export does not falsify last backup time or coverage
+PASS: normal edits cannot spoof a successful backup receipt
+PASS: full backup includes encrypted trash for recovery
+PASS: permanent deletion removes selected trash entry
+PASS: upgrade backup created once per successful format migration
+PASS: new header blocks reader v0.1 capability check
+PASS: downgrade of authenticated header is detected
+PASS: successful export plus failed receipt write is reported truthfully
+PASS: upgrade aborts if pre-upgrade backup cannot be created
+PASS: failed migration leaves memory and file unchanged
+PASS: stale legacy session cannot migrate a newer file
+PASS: concurrent migration cannot label v2 content as a legacy rollback snapshot
+PASS: retention removes only expired trash at the exact boundary
+PASS: permanent retention disables automatic purge
+PASS: empty trash preserves all active entries
+PASS: unsupported retention settings rejected
+PASS: name ordering uses stable entry data
+PASS: category and search filters combine correctly
+PASS: no-op expiry does not rewrite vault or create false changes
+PASS: device enrollment requires actual master password
+PASS: failed enrollment never invokes protector
+PASS: enrollment clears temporary key envelope after callback
+PASS: protected device envelope unlocks full encrypted vault
+PASS: empty device payload rejected
+PASS: truncated device payload rejected
+PASS: tampered device envelope at 0 rejected
+PASS: tampered device envelope at 18 rejected
+PASS: tampered device envelope at 80 rejected
+PASS: device envelope cannot unlock another vault with same password
+PASS: device enrollment survives ordinary data edits
+PASS: portable backup needs only master password, no native key
+PASS: core never persists plaintext device key or native sidecar
+PASS: password rotation invalidates old protected header binding
+PASS: protector failure propagates without enrollment
+PASS: failed protector also clears temporary key envelope
+PASS: disposed session cannot enroll a device
+PASS: only local entry page may send native commands
+PASS: canonical local HTTPS host with default port accepted
+PASS: local resource allowed: index.html
+PASS: local resource allowed: app.js
+PASS: local resource allowed: style.css
+PASS: local resource allowed: app-icon.png
+PASS: untrusted navigation/resource blocked: https://localvault.invalid.evil/index.html
+PASS: untrusted navigation/resource blocked: https://evil.localvault.invalid/index.html
+PASS: untrusted navigation/resource blocked: http://localvault.invalid/index.html
+PASS: untrusted navigation/resource blocked: https://localvault.invalid:444/index.html
+PASS: untrusted navigation/resource blocked: https://user@localvault.invalid/index.html
+PASS: untrusted navigation/resource blocked: https://localvault.invalid/index.html?x=1
+PASS: untrusted navigation/resource blocked: https://localvault.invalid/index.html#secret
+PASS: untrusted navigation/resource blocked: file:///index.html
+PASS: untrusted navigation/resource blocked: data:text/html,example
+PASS: untrusted navigation/resource blocked: https://example.com/index.html
+PASS: untrusted navigation/resource blocked: https://localvault.invalid/vault.db
+PASS: untrusted navigation/resource blocked: https://localvault.invalid/app.js?x=1
+PASS: static script cannot impersonate native entry page
+PASS: missing native message origin rejected
+PASS: original v0.3 fixture opens with empty presets without migration
+PASS: read-only v0.3 unlock preserves original file bytes
+PASS: first preset write upgrades to format 4 and preserves old entry metadata
+PASS: format-2 rollback snapshot is preserved before new feature write
+PASS: presets own separate snapshots, not caller references
+PASS: caller cannot mutate stored presets through snapshots
+PASS: common passwords retain exact whitespace and newlines through encrypted reopen
+PASS: all common labels and values are absent from database plaintext
+PASS: format-4 header prevents old readers from silently dropping presets
+PASS: stale preset save rejected
+PASS: stale preset deletion rejected
+PASS: blank preset label rejected
+PASS: empty preset value rejected
+PASS: unsupported preset type rejected
+PASS: unbounded preset value rejected
+PASS: duplicate preset IDs rejected without saving
+PASS: preset count over 100 rejected
+PASS: rejected preset mutations do not change revision
+PASS: portable backup preserves common presets without local files
+PASS: updating a preset does not alter previously saved entries
+PASS: deleting a preset retains independent entry copies
+PASS: master-password rotation retains encrypted common presets
+PASS: unsupported KSP property may try equivalent legacy property name
+PASS: unknown KSP property parameter may try equivalent legacy name
+PASS: access denied must not trigger compatibility retry
+PASS: invalid cryptographic data must not trigger compatibility retry
+PASS: Hello diagnostics never expose exception text, credentials or file paths
+PASS: Hello error reports exact safe stage and eight-digit native code
+PASS: outer operation preserves precise inner failing stage
+PASS: native user cancellation is distinguished from unsupported hardware
+PASS: silent-unlock rejection retains explicit application diagnostic
+PASS: every Hello stage has a user-visible diagnostic description
+PASS: Hello verification exports public parameters only
+PASS: deterministic SHA-256 signatures reproduce wrapping keys without persistence
+PASS: signature-derived AES-256-GCM envelope preserves complete device payload
+PASS: device envelope retains its public challenge
+PASS: serialized envelope contains no signature, wrapping key or plaintext
+PASS: each credential envelope has a fresh GCM nonce
+PASS: modified challenge/nonce/tag/ciphertext is rejected at offset 8
+PASS: modified challenge/nonce/tag/ciphertext is rejected at offset 40
+PASS: modified challenge/nonce/tag/ciphertext is rejected at offset 52
+PASS: modified challenge/nonce/tag/ciphertext is rejected at offset 68
+PASS: unknown signature envelope magic is rejected
+PASS: truncated signature envelope is rejected
+PASS: wrong wrapping key cannot decrypt credentials
+PASS: prepared envelope works without retaining a native signing session
+PASS: prepared wrapping key is zeroed on disposal
+PASS: disposed preparation cannot wrap credentials
+PASS: unexpected core payload length is rejected
+PASS: modified signature cannot derive a wrapping key
+PASS: signature for another challenge is rejected
+PASS: signature from another system key is rejected
+PASS: randomized PSS cannot silently replace deterministic PKCS1 signatures
+PASS: signature verifier refuses private key parameters
+PASS: only NTE_SILENT_CONTEXT proves that signing needs interaction
+PASS: silent success or unrelated failure never authorizes unlock: 00000000
+PASS: silent success or unrelated failure never authorizes unlock: 80090027
+PASS: silent success or unrelated failure never authorizes unlock: 80090005
+PASS: silent success or unrelated failure never authorizes unlock: 80070005
+PASS: signature envelope unlocks actual vault payload without database migration
+PASS: master password change invalidates signature-wrapped old credentials
+PASS: public export errors retain exact safe diagnostic stage and code
+PASS: original v0.4 format-3 fixture loads presets without rewriting
+PASS: read-only format-3 open keeps file and backup directory unchanged
+PASS: third-party write upgrades to format 4 while retaining common presets
+PASS: format-3 rollback snapshot retains pre-upgrade common presets
+PASS: multiple third-party and code-login methods survive reopen
+PASS: third-party-only platform requires no local account password fields
+PASS: providers, linked identities and passport secrets remain encrypted on disk
+PASS: list summary describes third-party login methods
+PASS: provider name and identity hints can be searched in unlocked core
+PASS: login search does not include linked passport secret values
+PASS: passport rename preserves stable link identity
+PASS: trashing passport preserves platform link without cascading deletion
+PASS: missing passport retains a stale link for explicit UI diagnosis
+PASS: self-referencing passport link rejected
+PASS: unknown login kind rejected
+PASS: unknown provider requires explicit custom-provider mode
+PASS: custom third-party provider must have a name
+PASS: duplicate login method IDs rejected
+PASS: login method count is bounded
+PASS: identity hint length is bounded
+PASS: third-party methods cannot silently attach to non-account category
+PASS: passport links to non-account entries are rejected
+PASS: portable backup preserves login methods, stale links and common presets
+RESULT: 195 checks passed.
